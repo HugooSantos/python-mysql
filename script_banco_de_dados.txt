@@ -1,0 +1,103 @@
+create database if not exists fazenda_bd
+default character set utf8mb4
+default collate utf8mb4_general_ci;
+use fazenda_bd;
+create table if not exists funcionarios(
+id int(11) not null auto_increment primary key,
+nome varchar(50) not null,
+cpf varchar(11) not null unique,
+sexo enum ('m','f'),
+salario float(10, 2) not null default 0.00,
+cargo char(50) not null
+) engine =Innodb default charset=utf8mb4;
+
+insert into funcionarios(nome,cpf,sexo,salario,cargo) values
+('José Padilha Soares','09823687220','m','1500.00','ordenhador'),
+('Lucas Bezerra Freitas','09997318320','m','1500.00','ordenhador'),
+('Maria Oliveira Carmo','09726378620','f','1500.00','ordenhadora'),
+('Almir Barbosa Santos','09831038720','m','1500.00','ordenhador'),
+('Carlos Alberto Cardoso','09876298720','m','1000.00','agricultor'),
+('Janaína Cândida Santos','09726785320','f','1000.00','agricultora'),
+('Jair Antunes Vasco','09867187220','m','1000.00','agricultor'),
+('Laís Santana','09887419320','f','1000.00','agricultora');
+create table if not exists rebanho(
+id_rebanho int(11) primary key not null,
+nome varchar(10),
+especie varchar(20),
+ordenhacao timestamp,
+temperatura_leite varchar (4),
+produtividade varchar(3),
+inseminacao date not null,
+estimativa_parto date,
+ruminacao int not null default 0,
+responsavel int(11),
+FOREIGN KEY(responsavel) REFERENCES funcionarios(id)
+) engine=Innodb default charset=utf8mb4;
+insert into rebanho
+(id_rebanho,nome,especie,ordenhacao,temperatura_leite,produtividade,inseminacao,estimativa_parto,ruminacao,responsavel)
+values
+('1','Mão branca','burlina','2020-09-29 15:45:39','15c','4L','2020-09-28','2021-06-15','3','2'),
+('2','Mimosa','burlina','2020-09-29 15:50:20','17c','3L','2020-08-04','2021-05-13','2','1'),
+('3','Júlia','burlina','2020-09-29 15:55:48','13c','4L','2020-07-17','2021-04-11','3','3'),
+('4','Camila','burlina','2020-09-29 16:02:24','15c','4L','2020-08-25','2021-05-20','2','4'),
+('5','Branquinha','burlina','2020-10-08 18:17:05','12c','5L','2020-10-05','2021-07-10','2','2'),
+('6','Boneca','burlina','2020-10-08 18:21:07','18c','2L','2020-07-21','2021-04-30','3','1'),
+('7','Aninha','burlina','2020-10-08 18:27:11','13c','4L','2020-08-30','2021-05-20','2','4'),
+('8','Dada','burlina','2020-10-08 18:31:50','14c','3L','2020-05-15','2021-02-20','2','3');
+
+create table if not exists plantio(
+id_planta int(11) primary key,
+nome varchar(30) not null,
+estimativa_colheita date,
+replantio date,
+func_responsavel int(11),
+FOREIGN KEY(func_responsavel) REFERENCES funcionarios(id)
+) engine= innodb default charset=utf8mb4;
+insert into plantio (id_planta,nome,estimativa_colheita,replantio,func_responsavel) values
+('1','cebolinha','2020-11-10','2020-11-12','5'),
+('2','Salsinha','2020-11-09','2020-11-11','6'),
+('3','alface','2020-11-08','2020-11-10','7'),
+('4','coentro','2020-11-07','2020-11-09','8');
+create table if not exists produtos(
+id_produto int(11) not null primary key,
+nome_produto varchar(20) not null,
+estoque varchar(10),
+preco decimal(4,2),
+origem_laticinio int(11),
+origem_planta int(11),
+FOREIGN KEY(origem_laticinio) REFERENCES rebanho(id_rebanho),
+FOREIGN KEY(origem_planta) REFERENCES plantio(id_planta)
+) engine=Innodb default charset=utf8mb4;
+insert into produtos(id_produto,nome_produto,estoque,preco,origem_laticinio) values
+('1','Queijo','10kg','20.50','1'),
+('2','Leite','50L','3.29','2'),
+('3','Creme de Leite','5L','2.50','6'),
+('4','Leite condensado','5L','3.50','8');
+insert into produtos(id_produto,nome_produto,estoque,preco,origem_planta) values
+('5','cebolinha','50un','2.00','1'),
+('6','salsinha','100un','2.00','2'),
+('7','alface','70un','3.00','3'),
+('8','coentro','30un','2.00','4');
+create table if not exists varejistas(
+nome varchar(30) not null,
+cpf_varejista varchar(11),
+produto_comprado int(11),
+foreign key(produto_comprado) references produtos(id_produto)
+) engine=Innodb default charset=utf8mb4;
+insert into varejistas(nome,cpf_varejista,produto_comprado) values
+('Carlos silveira','09729319224','3'),
+('João Lucas Cândido','09934237620','2'),
+('Hugo Santos Oliveira','09728919720','1'),
+('Vitor Ferraz de Jesus','09841937220','1'),
+('Adalberto viana','09865320920','5'),
+('Lucas Souza de Jesus','09887329820','7'),
+('Ágata Gonzaga Santos','09847329020','8');
+select id,funcionarios.nome,rebanho.nome from rebanho join funcionarios
+on rebanho.responsavel = funcionarios.id;
+select count(*) from rebanho;
+select produtos.nome_produto,varejistas.nome, varejistas.produto_comprado,produtos.id_produto
+from varejistas join produtos
+on varejistas.produto_comprado = produtos.id_produto;
+select * from produtos;
+select * from varejistas;
+select * from plantio;
